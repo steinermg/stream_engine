@@ -65,7 +65,7 @@ def get_time_range(time_stamps):
               time_stamp_values[1] + ")")
         return None
 
-    print str(begin_time_stamp), str(end_time_stamp)
+    print(str(begin_time_stamp), str(end_time_stamp))
     return TimeRange(begin_time_stamp, end_time_stamp)
 
 def split_refdes(old_or_new, refdes):
@@ -91,7 +91,7 @@ def split_sk_vals(old_or_new, skentry):
     return (skvals[0], skvals[1], skvals[2])
 
 def usage(mesg):
-    print("BAD INPUT: " + str(mesg))
+    print(("BAD INPUT: " + str(mesg)))
     print("USAGE: movecassdata.py '<oldsk>' '<newsk>' '<timestamp_range>'")
     print("<oldsk>,<newsk> as <subsite>-<node>-<sensor>:<method>:<stream>")
     print("<stream> as <stream_nbr> or <stream_name>")
@@ -134,7 +134,7 @@ def main(args):
     dep_datasets = get_full_cass_dataset(old_stream_key, time_range, keep_exclusions=True)
 
     if dep_datasets:
-        for dep, dataset in dep_datasets.iteritems():
+        for dep, dataset in dep_datasets.items():
             insert_dataset(new_stream_key, dataset)
 
 if __name__ == "__main__":

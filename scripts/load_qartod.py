@@ -64,7 +64,7 @@ def parse_qartod_dict(qartod_dict):
         try:
             param_dict = json.loads(params)      
         except ValueError:
-            print('Failure deserializing QC parameter configuration ', params)
+            print(('Failure deserializing QC parameter configuration ', params))
             return        
         # climatology qcconfig is encoded in a separate CSV file pointed to by climatologyTable
         qcconfig = parse_climatology_table(climatologyTable, param_dict)
@@ -115,7 +115,7 @@ def parse_climatology_table(filepath, param_dict):
     with open(filepath, mode='r') as csvfile:
         reader = csv.reader(csvfile)
         # NOTE: time_bins[0] is empty for alignment purposes!
-        time_bins = reader.next()
+        time_bins = next(reader)
 
         #don't add a zspan if there is no value for zinp, doing so will cause tests to  not run
         includeZSpan = True
@@ -136,8 +136,8 @@ def parse_climatology_table(filepath, param_dict):
 
 
 def insert_qartod_records(qartod_list):
-    host = raw_input('Connecting to PostgreSQL to insert QARTOD records...\nhost: ')
-    username = raw_input('Connecting to PostgreSQL to insert QARTOD records...\nusername: ')
+    host = input('Connecting to PostgreSQL to insert QARTOD records...\nhost: ')
+    username = input('Connecting to PostgreSQL to insert QARTOD records...\nusername: ')
     password = getpass.getpass('password: ')
     connection = None
     try:
@@ -150,9 +150,9 @@ def insert_qartod_records(qartod_list):
                         cursor.execute("SELECT nextval('qartod_test_sequence')")
                         qartod_id = cursor.fetchone()
                         parsed_qartod_dict['id'] = qartod_id
-                
-                        fields = sql.SQL(', ').join(map(sql.Identifier, parsed_qartod_dict.keys()))
-                        values = sql.SQL(', ').join(map(sql.Placeholder, parsed_qartod_dict.keys()))
+
+                        fields = sql.SQL(', ').join(map(sql.Identifier, list(parsed_qartod_dict.keys())))
+                        values = sql.SQL(', ').join(map(sql.Placeholder, list(parsed_qartod_dict.keys())))
                         cursor.execute(sql.SQL("INSERT INTO qartod_tests ({}) VALUES ({})").format(fields, values), parsed_qartod_dict)
     finally:
         if connection:

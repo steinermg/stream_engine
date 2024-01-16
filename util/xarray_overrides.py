@@ -5,20 +5,21 @@ import pandas as pd
 
 import xarray.backends.api
 import xarray as xr
-
+"""
 from xarray.conventions import (CharToStringArray, NativeEndiannessArray, DecodedCFTimedeltaArray, pop_to,
-                                DecodedCFDatetimeArray, TIME_UNITS, MaskedAndScaledArray, BoolTypeArray)
+                                DecodedCFDatetimeArray, TIME_UNITS, MaskedAndScaledArray, BoolTypeArray) """
 from xarray.core import indexing, utils
-from xarray.core.pycompat import iteritems, OrderedDict
+""" from xarray.core.pycompat import iteritems, OrderedDict """
+from collections import OrderedDict
 from xarray.core.variable import as_variable, Variable
 
-
+"""
 # PATCH default XARRAY behavior when restoring string variables from netCDF
 # See https://github.com/pydata/xarray/issues/1193
 # REMOVE when corrected upstream
 def decode_cf_variable(var, concat_characters=True, mask_and_scale=True,
                        decode_times=True, decode_endianness=True):
-    """
+    """ """
     Decodes a variable which may hold CF encoded information.
 
     This includes variables that have been masked and scaled, which
@@ -45,7 +46,7 @@ def decode_cf_variable(var, concat_characters=True, mask_and_scale=True,
     -------
     out : Variable
         A variable holding the decoded equivalent of var
-    """
+    """ """
     # use _data instead of data so as not to trigger loading data
     var = as_variable(var)
     data = var._data
@@ -120,7 +121,7 @@ def decode_cf_variable(var, concat_characters=True, mask_and_scale=True,
     return Variable(dimensions, indexing.LazilyIndexedArray(data),
                     attributes, encoding=encoding)
 
-
+"""
 def drop(self, labels, dim=None, inplace=False):
     """Drop variables or index labels from this dataset. Based on xarray.dataset.drop, but adds inplace option.
 
@@ -142,7 +143,7 @@ def drop(self, labels, dim=None, inplace=False):
     if dim is None:
         self._assert_all_in_dataset(labels)
         drop = set(labels)
-        variables = OrderedDict((k, v) for k, v in iteritems(self._variables)
+        variables = OrderedDict((k, v) for k, v in self._variables.items()
                                 if k not in drop)
         coord_names = set(k for k in self._coord_names if k in variables)
         result = self._replace_vars_and_dims(variables, coord_names, inplace=inplace)
@@ -158,7 +159,7 @@ def drop(self, labels, dim=None, inplace=False):
     return self if inplace else result
 
 
-xarray.conventions.decode_cf_variable = decode_cf_variable
+""" xarray.conventions.decode_cf_variable = decode_cf_variable """
 xarray.core.dataset.Dataset.drop = drop
 
 __all__ = [xr]

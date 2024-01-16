@@ -2,7 +2,7 @@ import logging
 import time
 import uuid
 from collections import deque, namedtuple
-from itertools import izip
+
 from multiprocessing import BoundedSemaphore
 
 import msgpack
@@ -656,7 +656,7 @@ def insert_dataset(stream_key, dataset):
     prov_query_results = execute_concurrent_with_args(SessionManager.session(), prov_query, prov_query_args)
 
     # get the number of particles from the first dataset variable
-    first_data_var_name = dataset.data_vars.items()[0][0]
+    first_data_var_name = list(dataset.data_vars.items())[0][0]
     size = dataset[first_data_var_name].size
 
     # create the data insertion list
@@ -857,7 +857,7 @@ def insert_dataset(stream_key, dataset):
     prov_ins_args = [(row.subsite, row.sensor, row.node, row.method, row.deployment, row.id,
                       row.file_name, row.parser_name, row.parser_version) for row in prov_modified]
     prov_ins_results = execute_concurrent_with_args(SessionManager.session(), prov_insert, prov_ins_args)
-    prov_insertions = list(filter(lambda r: r[0], prov_ins_results))
+    prov_insertions = [r for r in prov_ins_results if r[0]]
     mesg = 'Provenance row insertions: {:d} of {:d} succeeded'.format(len(prov_insertions), len(prov_modified))
     log.info(mesg)
 
@@ -891,7 +891,7 @@ def store_qc_results(qc_results_values, pk, particle_ids, particle_bins, particl
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
         batch = BatchStatement()
-        for (qc_results, particle_id, particle_bin, particle_deploy) in izip(qc_results_values, particle_ids,
+        for (qc_results, particle_id, particle_bin, particle_deploy) in zip(qc_results_values, particle_ids,
                                                                              particle_bins, particle_deploys):
             batch.add(insert_results, (pk.get('subsite'), pk.get('node'), pk.get('sensor'),
                                        particle_bin, particle_deploy, pk.get('stream'),
@@ -902,7 +902,7 @@ def store_qc_results(qc_results_values, pk, particle_ids, particle_bins, particl
         log.info('Writing QC results to log file.')
         qc_log = logging.getLogger('qc.results')
         qc_log_string = ""
-        for (qc_results, particle_id, particle_bin, particle_deploy) in izip(qc_results_values, particle_ids,
+        for (qc_results, particle_id, particle_bin, particle_deploy) in zip(qc_results_values, particle_ids,
                                                                              particle_bins, particle_deploys):
             qc_log_string += "refdes:{0}-{1}-{2}, bin:{3}, stream:{4}, deployment:{5}, id:{6}, parameter:{7}, qc results:{8}\n" \
                 .format(pk.get('subsite'), pk.get('node'), pk.get('sensor'), particle_bin,

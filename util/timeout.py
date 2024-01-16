@@ -26,15 +26,15 @@ def set_timeout(timeout=None):
     def inner(func):
         @wraps(func)
         def decorated_function(*args, **kwargs):
-            signal.signal(signal.SIGALRM, sigalarm_handler)
-            signal.alarm(timeout)
+            #signal.signal(signal.SIGALRM, sigalarm_handler)
+            #signal.alarm(timeout)
             try:
                 result = func(*args, **kwargs)
             except TimedOutException:
                 raise StreamEngineException("Data processing timed out after %s seconds" %
                                             timeout, status_code=408)
-            finally:
-                signal.alarm(0)
+            #finally:
+            #    signal.alarm(0)
 
             return result
 
@@ -86,7 +86,7 @@ def set_inactivity_timeout(is_active=lambda _: False, poll_period=None, max_runt
                 result = func(*args, **kwargs)
                 # use pickle to serialize the return object and send it to the parent over a pipe
                 result_string = pickle.dumps(result)
-                with os.fdopen(write_fd, 'w') as w:
+                with os.fdopen(write_fd, 'wb') as w:
                     w.write(result_string)
                 # the child is done - don't keep the extra process around
                 os._exit(0)
@@ -102,17 +102,17 @@ def set_inactivity_timeout(is_active=lambda _: False, poll_period=None, max_runt
                     # exit similar to os._exit, but allowing some cleanup
                     raise SystemExit
                     
-                signal.signal(signal.SIGTERM, sigterm_handler)
-                signal.signal(signal.SIGALRM, timeout_handler)
+                # signal.signal(signal.SIGTERM, sigterm_handler)
+                # signal.signal(signal.SIGALRM, timeout_handler)
                 
                 # Whatever happens while monitoring the child process, make sure two things happen:
                 # 1. If an exception (other than a handled TimedOutException) is raised, kill the child process
                 # 2. Once the monitoring loop is exited, clear the timeout alarm so it doesn't interrupt later code
                 try:
                     # set a timeout for the poll_period - this will trigger a TimedOutException
-                    signal.alarm(poll_period)
+                    # signal.alarm(poll_period)
                     
-                    with os.fdopen(read_fd) as r:
+                    with os.fdopen(read_fd, 'rb') as r:
                         # Wrap the try-except block in a loop so that the contents of the try clause are retried until
                         # one of the following conditions is met:
                         # 1. The results are read from pipe and the child waited for successfully
@@ -130,7 +130,7 @@ def set_inactivity_timeout(is_active=lambda _: False, poll_period=None, max_runt
                                 if (not max_runtime or runtime < max_runtime) and is_active(**arguments):
                                     log.info("Function %s has run %s seconds and is still active." % (func.__name__, runtime))
                                     # extend the timeout for another poll_period seconds
-                                    signal.alarm(poll_period)
+                                    # signal.alarm(poll_period)
                                 else:
                                     # raise an exception that will go to EDEX
                                     raise StreamEngineException("Function %s timed out after %s seconds" % 
@@ -138,8 +138,8 @@ def set_inactivity_timeout(is_active=lambda _: False, poll_period=None, max_runt
                 except Exception:
                     os.kill(processid, signal.SIGKILL)
                     raise
-                finally:
-                    signal.alarm(0)
+                # finally:
+                    # signal.alarm(0)
                 
                 # convert the serialized representation of the result back to an object
                 result = pickle.loads(result_string)

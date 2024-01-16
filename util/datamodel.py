@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from common import StreamEngineException
-from multi_concat import multi_concat
+from .common import StreamEngineException
+from .multi_concat import multi_concat
 from engine import app
 
 __author__ = 'Stephen Zakrewsky'
@@ -131,6 +131,9 @@ def to_xray_dataset(cols, data, stream_key, request_uuid, san=False, keep_exclus
 
             if column in app.config['INTERNAL_OUTPUT_MAPPING']:
                 encoding = app.config['INTERNAL_OUTPUT_MAPPING'][column]
+                fill_val = FILL_VALUES.get(encoding)
+                is_array = False
+                param_dims = []
 
             data = _replace_values(dataframe_group[column].values, encoding, fill_val, is_array, column)
             data = _force_dtype(data, encoding)
@@ -200,17 +203,17 @@ def _replace_values(data_slice, value_encoding, fill_value, is_array, name):
     # some other object we don't know how to fill.
     if is_array:
         unpacked = [msgpack.unpackb(x) for x in data_slice]
-        no_nones = filter(None, unpacked)
+        no_nones = [_f for _f in unpacked if _f]
         # Get the maximum sized array using np
         if no_nones:
             shapes = [np.array(x).shape for x in no_nones]
             max_len = max((len(x) for x in shapes))
-            shapes = filter(lambda x: len(x) == max_len, shapes)
+            shapes = [x for x in shapes if len(x) == max_len]
             max_shape = max(shapes)
             shp = tuple([len(unpacked)] + list(max_shape))
             # temporarily encode strings as object to avoid dealing with length
             # then cast as string below
-            if value_encoding == 'string':
+            if value_encoding == 'str':
                 data_slice = np.empty(shp, dtype='object')
             else:
                 data_slice = np.empty(shp, dtype=value_encoding)
@@ -281,7 +284,7 @@ def compile_datasets(datasets):
     :return:
     """
     # filter out the Nones
-    datasets = filter(None, datasets)
+    datasets = [_f for _f in datasets if _f]
     if not datasets:
         return None
 
@@ -292,7 +295,7 @@ def compile_datasets(datasets):
         # concatenation failed to run normally and the ValueError suggests an index might be at fault
         # for each index except 'obs', set the index values to the sequence 0, 1, 2, ...
         for dataset in datasets:
-            non_obs_indices = [key for key in dataset.indexes if key != u'obs']
+            non_obs_indices = [key for key in dataset.indexes if key != 'obs']
             for key in non_obs_indices:
                 dataset[key] = (key, np.arange(dataset.dims[key]), dataset[key].attrs)
         # with the indices reset, try the concatenation again

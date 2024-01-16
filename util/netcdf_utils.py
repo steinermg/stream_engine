@@ -37,14 +37,20 @@ def make_encoding(ds):
 
         encoding[k] = {'zlib': compress, 'complevel': comp_level}
 
+        if not shape:
+            continue
+
         if 0 not in shape:
             if values.dtype.kind == 'O':
                 values = values.astype('str')
 
-            if values.dtype.kind == 'S':
+            if values.dtype.kind in ('S'):
                 size = values.dtype.itemsize
                 if size > 1:
                     shape = shape + (size,)
+
+            # if values.dtype.kind == 'U':
+            #    encoding[k]['_FillValue'] = None
 
             dim0 = min(shape[0], chunksize)
             shape = (dim0,) + shape[1:]
@@ -145,7 +151,8 @@ def prep_classic(ds):
         data_array = ds.get(data_array_name)
         data_type = data_array.dtype
         if data_type in [np.int64, np.uint32, np.uint64]:
-            ds[data_array_name] = force_data_array_type(data_array, data_type, np.str)
+            ds[data_array_name] = force_data_array_type(data_array, data_type, str)
+            ds[data_array_name].attrs.pop('_FillValue', None)
         elif data_type == np.uint16:
             ds[data_array_name] = force_data_array_type(data_array, data_type, np.int32)
         elif data_type == np.uint8:

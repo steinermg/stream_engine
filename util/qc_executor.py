@@ -78,7 +78,7 @@ class QcExecutor(object):
                     local_qc_args[function_name][qcp] = dataset.time.values
                 elif value == 'data':  # populate data vectors with particle data
                     local_qc_args[function_name][qcp] = values
-                elif isinstance(value, basestring):
+                elif isinstance(value, str):
                     if value in dataset:
                         if len(dataset[value].values.shape) > 1:
                             log.error('<%s> Attempted to run QC against >1d data %r %r',

@@ -265,7 +265,7 @@ LOCAL_ASYNC_DIR = '/local/async_results'
 # Directory to place aggregated netcdf results
 FINAL_ASYNC_DIR = '/opt/ooi/async'
 # Names of other stream engine nodes for aggregation
-# This should match the output of 'uname -n' to allow this node to skip itself
+# This should match the output oe -n' to allow this node to skip itself
 STREAM_ENGINE_NODES = []
 # Maximum number of concurrent rsync subprocesses
 MAX_RSYNC_WORKERS = 4
