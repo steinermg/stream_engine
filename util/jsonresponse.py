@@ -246,5 +246,7 @@ class NumpyJSONEncoder(json.JSONEncoder):
             return repr(o)
         elif isinstance(o, datetime):
             return str(o)
+        elif isinstance(o, bytes):
+            return o.decode()
         else:
             return json.JSONEncoder.default(self, o)

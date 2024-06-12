@@ -124,7 +124,7 @@ def to_xray_dataset(cols, data, stream_key, request_uuid, san=False, keep_exclus
                 is_array = False
                 param_dims = []
             else:
-                encoding = 'str'
+                encoding = 'S'
                 fill_val = ''
                 is_array = False
                 param_dims = []
@@ -170,6 +170,12 @@ def to_xray_dataset(cols, data, stream_key, request_uuid, san=False, keep_exclus
 
             # Override the fill value supplied by preload if necessary
             array_attrs['_FillValue'] = fill_val
+
+            # It appears that the netcdf can not be read in (for aggregation) when a field of dtype 'Sx'
+            # has a _FillValue set. So just remove it here. The _replace_values function has previously used
+            # the fill value where needed so the fill value should no longer be needed after that point.
+            if encoding == 'S':
+                array_attrs.pop('_FillValue', None)
 
             dataset.update({column: xr.DataArray(data, dims=dims, attrs=array_attrs)})
         datasets[deployment] = dataset

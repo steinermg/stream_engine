@@ -216,7 +216,7 @@ def max_dtype(dtype1, dtype2):
     # special case string, allow it to override all other dtypes
     # special case uint64
     if any((kind1 == 'S', kind2 == 'S')):
-        return np.dtype(np.str)
+        return np.dtype(str)
 
     # possible types below this point (bool, float, integer, unsigned integer)
     # bool fits into any other data type, the other one wins
@@ -244,13 +244,13 @@ def max_dtype(dtype1, dtype2):
     # find the smallest signed integer to fit both cases
     if kind1 == 'u' and kind2 == 'i':
         if dtype1.itemsize == 8:
-            return np.dtype(np.str)
+            return np.dtype(str)
         else:
             return max_dtype(np.dtype('i%d' % (dtype1.itemsize * 2)), dtype2)
 
     if kind2 == 'u' and kind1 == 'i':
         if dtype2.itemsize == 8:
-            return np.dtype(np.str)
+            return np.dtype(str)
         else:
             return max_dtype(np.dtype('i%d' % (dtype2.itemsize * 2)), dtype1)
 

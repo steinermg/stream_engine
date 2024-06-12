@@ -99,7 +99,7 @@ class QcExecutor(object):
             processid = os.fork()
             if processid == 0:
                 # child process
-                with os.fdopen(write_fd, 'w') as w:
+                with os.fdopen(write_fd, 'wb') as w:
                     os.close(read_fd)
                     # run the qc function
                     try:
@@ -111,13 +111,13 @@ class QcExecutor(object):
                         w.write(results_string)
                     except (TypeError, ValueError) as e:
                         log.exception('<%s> Failed to execute QC %s %r', self.request_id, function_name, e)
-                        w.write(EXCEPTION_MESSAGE)
+                        w.write(EXCEPTION_MESSAGE.encode(encoding='utf-8'))
                 # child process is done, don't let it stick around
                 os._exit(0)
             else:
                 # parent process
                 os.close(write_fd)
-                with os.fdopen(read_fd) as r:
+                with os.fdopen(read_fd, 'rb') as r:
                     results_string = r.read()
                 # wait for the child process to prevent zombies - second argument of 0 means default behavior of waitpid
                 os.waitpid(processid, 0)
@@ -127,7 +127,7 @@ class QcExecutor(object):
                     log.error('<%s> Failed to execute QC %s: QC process failed to return any data', self.request_id,
                               function_name)
                     continue
-                elif results_string == EXCEPTION_MESSAGE:
+                elif results_string.decode(encoding='utf_8', errors="ignore") == EXCEPTION_MESSAGE:
                     # an exception has already been logged, proceed with trying the next qc function
                     continue
                 else:

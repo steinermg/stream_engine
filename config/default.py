@@ -200,7 +200,7 @@ HDF5_COMP_LEVEL = 1
 
 INTERNAL_OUTPUT_MAPPING = {
     'deployment': 'int32',
-    'id': 'str',
+    'id': 'S',
     'lat': 'float64',
     'lon': 'float64'
 }
@@ -221,6 +221,7 @@ FILL_VALUES = {
     "uint32": 0xffffffff,
     "uint64": 0xffffffffffffffff,
     "string": "",
+    "S": "",
     "boolean": -9
 }
 
